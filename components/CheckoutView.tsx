@@ -232,10 +232,11 @@ export function CheckoutView() {
               <span className="mark" /><span className="ol">Наличными</span>
             </label>
             {pay === "cash" && (
-              <div className="change">
-                <span style={{ color: "var(--muted)", fontSize: 14 }}>Сдача с</span>
-                <input className="inp" inputMode="numeric" placeholder="без сдачи" value={change} onChange={(e) => setChange(e.target.value)} aria-label="Сдача с" />
-              </div>
+              <label className="inp-ph change">
+                <span>Сдача с</span>
+                <input inputMode="numeric" placeholder="без сдачи" value={change} onChange={(e) => setChange(e.target.value.replace(/D/g, "").slice(0, 5))} aria-label="Сдача с какой суммы" />
+                {change && <span className="suf">с.</span>}
+              </label>
             )}
             <label className="opt">
               <input type="radio" name="pay" checked={pay === "card"} onChange={() => setPay("card")} />

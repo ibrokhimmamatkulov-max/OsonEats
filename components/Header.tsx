@@ -34,36 +34,44 @@ export function Header() {
     return () => mq.removeEventListener("change", sync);
   }, [theme]);
 
+  const modeSwitch = (
+    <div className="mode" role="group" aria-label="Режим">
+      <button aria-pressed={mode === "order"} onClick={() => setMode("order")}>
+        <Icon name="bag" />Доставка
+      </button>
+      <button aria-pressed={mode === "visit"} onClick={() => setMode("visit")}>
+        <Icon name="map" />Куда сходить
+      </button>
+    </div>
+  );
+  const searchBox = (id: string) => (
+    <form className="search" role="search" onSubmit={(e) => { e.preventDefault(); saveQuery(q); (document.activeElement as HTMLElement)?.blur(); }}>
+      <Icon name="search" />
+      <label className="sr" htmlFor={id}>Поиск</label>
+      <input
+        id={id} type="search" autoComplete="off" value={q} enterKeyHint="search"
+        placeholder={mode === "visit" ? "Найти кафе или ресторан" : "Найти блюдо или заведение"}
+        onFocus={() => { if (path !== "/search") router.push("/search" + (q ? "?q=" + encodeURIComponent(q) : "")); }}
+        onChange={(e) => { setQ(e.target.value); router.replace("/search?q=" + encodeURIComponent(e.target.value)); }}
+      />
+    </form>
+  );
+
   return (
+    <>
     <header className={"hdr" + (scrolled ? " scrolled" : "")}>
       <div className="wrap hdr-in">
         <Link className="logo" href="/" aria-label="OsonEats, главная">
           <span className="logo-mark">O</span>
           <span className="t">OsonEats</span>
         </Link>
-        <div className="mode" role="group" aria-label="Режим">
-          <button aria-pressed={mode === "order"} onClick={() => setMode("order")}>
-            <Icon name="bag" />Доставка
-          </button>
-          <button aria-pressed={mode === "visit"} onClick={() => setMode("visit")}>
-            <Icon name="map" />Куда сходить
-          </button>
-        </div>
+        {modeSwitch}
         <button className="addr" aria-label="Адрес доставки" onClick={() => openAddr()}>
           <Icon name="pin" />
           <span>{addr ? addr.label : "Худжанд"}</span>
           <Icon name="down" style={{ width: 16, height: 16, color: "var(--muted)" }} />
         </button>
-        <form className="search" role="search" onSubmit={(e) => { e.preventDefault(); saveQuery(q); (document.activeElement as HTMLElement)?.blur(); }}>
-          <Icon name="search" />
-          <label className="sr" htmlFor="q">Поиск</label>
-          <input
-            id="q" type="search" autoComplete="off" value={q}
-            placeholder={mode === "visit" ? "Найти кафе или ресторан" : "Найти блюдо или заведение"}
-            onFocus={() => { if (path !== "/search") router.push("/search" + (q ? "?q=" + encodeURIComponent(q) : "")); }}
-            onChange={(e) => { setQ(e.target.value); router.replace("/search?q=" + encodeURIComponent(e.target.value)); }}
-          />
-        </form>
+        {searchBox("q")}
         <button className="icon-btn" aria-label="Сменить тему" onClick={() => setTheme(dark ? "light" : "dark")}>
           <Icon name={dark ? "sun" : "moon"} />
         </button>
@@ -78,5 +86,11 @@ export function Header() {
         )}
       </div>
     </header>
+    {/* phones: search and mode scroll away with the page, only the row above stays pinned */}
+    <div className="hdr-sub wrap">
+      {searchBox("q-m")}
+      {modeSwitch}
+    </div>
+    </>
   );
 }
