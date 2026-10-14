@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { findDish, venueById } from "@/lib/utils";
 import { ConfirmDialog } from "./ConfirmDialog";
@@ -78,6 +79,7 @@ function save(key: string, value: unknown) {
 }
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
   const [mode, setMode] = useState<Mode>("order");
   const [theme, setThemeState] = useState<Theme>("system");
   const [cart, setCart] = useState<Record<string, number>>({});
@@ -214,7 +216,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       mode, setMode, theme, setTheme, cart, bump,
       clearCart: () => { setCart({}); setExtraSum(0); },
       cartCount, cartSum, favs, toggleFav, addToCart, cartVenueId,
-      openDish: setDishId, closeDish: () => setDishId(null), dishId, ask: setQuestion,
+      // phones get a real page (see DishPage), desktop a modal
+      openDish: (id) => (window.matchMedia("(max-width: 768px)").matches ? router.push(`/d/${id}`) : setDishId(id)),
+      closeDish: () => setDishId(null), dishId, ask: setQuestion,
       extraSum, orders, updateOrder, repeatOrder,
       user,
       setUser: (u) => {
@@ -253,7 +257,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         return order;
       },
     };
-  }, [mode, theme, setTheme, cart, extraSum, bump, favs, toggleFav, addToCart, cartVenueId, dishId, orders, updateOrder, repeatOrder, user, auth, addr, recent, addrPicker]);
+  }, [mode, theme, setTheme, cart, extraSum, bump, favs, toggleFav, addToCart, cartVenueId, dishId, orders, updateOrder, repeatOrder, user, auth, addr, recent, addrPicker, router]);
 
   return (
     <Ctx.Provider value={value}>
