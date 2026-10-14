@@ -39,7 +39,6 @@ export function CheckoutView() {
   const [when, setWhen] = useState<"asap" | "later">("asap");
   const [slot, setSlot] = useState<string | null>(null);
   const [pay, setPay] = useState<"cash" | "card">("cash");
-  const [change, setChange] = useState("");
   const [cutlery, setCutlery] = useState(1);
   const [f, setF] = useState({ addr: "", ent: "", flr: "", apt: "", cour: "", name: "", phone: "", note: "" });
   const [bad, setBad] = useState<string[]>([]);
@@ -130,13 +129,12 @@ export function CheckoutView() {
       return;
     }
     const eta = when === "later" && slot ? slot.replace("завтра ", "") : hm(new Date(Date.now() + (how === "delivery" ? 40 : 20) * 60000));
-    const changeFrom = change.replace(/\D/g, "");
     const order = placeOrder({
       venueId: v.id,
       how,
       eta,
       fee,
-      pay: pay === "card" ? "Картой при получении" : "Наличными" + (changeFrom ? `, сдача с ${changeFrom} с.` : ""),
+      pay: pay === "card" ? "Картой при получении" : "Наличными",
       addr: how === "delivery" ? [f.addr.trim(), f.apt.trim() && "кв. " + f.apt.trim()].filter(Boolean).join(", ") : v.pickupAddress,
       ll: how === "delivery" && addr ? addr.ll : undefined,
       cutlery,
@@ -231,13 +229,6 @@ export function CheckoutView() {
               <input type="radio" name="pay" checked={pay === "cash"} onChange={() => setPay("cash")} />
               <span className="mark" /><span className="ol">Наличными</span>
             </label>
-            {pay === "cash" && (
-              <label className="inp-ph change">
-                <span>Сдача с</span>
-                <input inputMode="numeric" placeholder="без сдачи" value={change} onChange={(e) => setChange(e.target.value.replace(/D/g, "").slice(0, 5))} aria-label="Сдача с какой суммы" />
-                {change && <span className="suf">с.</span>}
-              </label>
-            )}
             <label className="opt">
               <input type="radio" name="pay" checked={pay === "card"} onChange={() => setPay("card")} />
               <span className="mark" /><span className="ol">Картой</span>

@@ -815,3 +815,17 @@ textarea.inp{resize:none}
   .cu span{font-size:12.5px;right:6px}
   .cart{height:52px;border-radius:16px}
 }
+
+/* ---------- phones: header scrolls with the page; overlays cover the status-bar strip ----------
+   iOS Safari (floating address bar) places position:fixed top:0 below the status bar, so the
+   page shows through above full-screen overlays. Pull them up by the safe-area inset. */
+@media (max-width:768px){
+  .hdr{position:relative}
+  .rv-nav{top:0}
+  .rv-sec{scroll-margin-top:72px}
+  .scrim,.cfm-bg,.au-bg{top:calc(-1 * env(safe-area-inset-top))}
+  .sheet{top:calc(-1 * env(safe-area-inset-top));height:auto}
+  .ad-bg{top:calc(-1 * env(safe-area-inset-top));align-items:flex-start}
+  .ad{height:calc(100dvh + env(safe-area-inset-top));grid-template-rows:calc(40dvh + env(safe-area-inset-top)) minmax(0,1fr)}
+  .ad-x{top:calc(16px + env(safe-area-inset-top))}
+}
