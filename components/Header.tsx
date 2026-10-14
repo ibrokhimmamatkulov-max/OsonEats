@@ -6,7 +6,7 @@ import { Icon } from "./Icon";
 import { useApp } from "./AppProvider";
 
 export function Header() {
-  const { mode, setMode, theme, setTheme } = useApp();
+  const { mode, setMode, theme, setTheme, user, openAuth } = useApp();
   const [scrolled, setScrolled] = useState(false);
   const [dark, setDark] = useState(false);
 
@@ -54,7 +54,15 @@ export function Header() {
         <button className="icon-btn" aria-label="Сменить тему" onClick={() => setTheme(dark ? "light" : "dark")}>
           <Icon name={dark ? "sun" : "moon"} />
         </button>
-        <a className="btn btn-primary only-d" href="#">Войти</a>
+        <Link className="icon-btn only-d" href="/orders" aria-label="Мои заказы"><Icon name="receipt" /></Link>
+        {user ? (
+          <Link className="who only-d" href="/profile">
+            <span className="av">{(user.name || "?")[0].toUpperCase()}</span>
+            {user.name || "Профиль"}
+          </Link>
+        ) : (
+          <button className="btn btn-primary only-d" onClick={() => openAuth()}>Войти</button>
+        )}
       </div>
     </header>
   );

@@ -31,7 +31,7 @@ function slots(hours: [string, string], closedNow: boolean) {
 
 export function CheckoutView() {
   const router = useRouter();
-  const { cartVenueId, cartCount, cartSum, placeOrder } = useApp();
+  const { cartVenueId, cartCount, cartSum, placeOrder, user, openAuth } = useApp();
   const v = cartVenueId ? venueById(cartVenueId) : undefined;
 
   const [how, setHow] = useState<OrderHow>("delivery");
@@ -52,6 +52,11 @@ export function CheckoutView() {
   useEffect(() => {
     if (when === "later" && (!slot || !sl.includes(slot))) setSlot(sl[0] ?? null);
   }, [when, sl, slot]);
+
+  // a logged-in user gets name and phone filled in
+  useEffect(() => {
+    if (user) setF((s) => ({ ...s, name: s.name || user.name, phone: s.phone || formatPhone(user.phone) }));
+  }, [user]);
 
   useEffect(() => {
     document.body.classList.add("co-view");
@@ -90,6 +95,17 @@ export function CheckoutView() {
       el?.focus({ preventScroll: true });
       return;
     }
+    // confirm the phone by SMS first; the order is placed right after a successful code
+    const digits = f.phone.replace(/\D/g, "");
+    if (!user || user.phone !== digits) {
+      openAuth({ phone: digits, name: f.name.trim(), then: place });
+      return;
+    }
+    place();
+  };
+
+  const place = () => {
+    if (!v) return;
     const eta = when === "later" && slot ? slot.replace("завтра ", "") : hm(new Date(Date.now() + (how === "delivery" ? 40 : 20) * 60000));
     const changeFrom = change.replace(/\D/g, "");
     const order = placeOrder({

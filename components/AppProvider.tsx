@@ -36,7 +36,16 @@ type AppState = {
   updateOrder: (num: number, patch: Partial<Order>) => void;
   /** puts an old order back into the cart (asks if another venue's cart is there) */
   repeatOrder: (o: Order, after?: () => void) => void;
+  user: User | null;
+  setUser: (u: User | null) => void;
+  /** opens the phone login; `phone`/`name` prefill it, `then` runs after a successful login */
+  openAuth: (o?: AuthRequest) => void;
+  auth: AuthRequest | null;
+  closeAuth: () => void;
 };
+
+export type User = { phone: string; name: string };
+export type AuthRequest = { phone?: string; name?: string; step?: "phone" | "name"; then?: () => void };
 
 export type Question = { title: string; text: string; yes: string; onYes: () => void };
 
@@ -67,6 +76,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [dishId, setDishId] = useState<string | null>(null);
   const [question, setQuestion] = useState<Question | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
+  const [user, setUserState] = useState<User | null>(null);
+  const [auth, setAuth] = useState<AuthRequest | null>(null);
   const [ready, setReady] = useState(false);
 
   // hydrate persisted state after mount so server and client markup match
@@ -76,6 +87,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setFavs(load("oe-favs", []));
     setExtraSum(load("oe-extra", 0));
     setOrders(load("oe-orders", MOCK_HISTORY()));
+    setUserState(load<User | null>("oe-user", null));
     setReady(true);
   }, []);
   useEffect(() => { if (ready) save("oe-orders", orders); }, [orders, ready]);
@@ -185,6 +197,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       cartCount, cartSum, favs, toggleFav, addToCart, cartVenueId,
       openDish: setDishId, closeDish: () => setDishId(null), dishId, ask: setQuestion,
       extraSum, orders, updateOrder, repeatOrder,
+      user,
+      setUser: (u) => {
+        setUserState(u);
+        try {
+          if (u) localStorage.setItem("oe-user", JSON.stringify(u));
+          else localStorage.removeItem("oe-user");
+        } catch {}
+      },
+      auth, openAuth: (o = {}) => setAuth(o), closeAuth: () => setAuth(null),
       placeOrder: (o) => {
         const order: Order = {
           ...o,
@@ -202,7 +223,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         return order;
       },
     };
-  }, [mode, theme, setTheme, cart, extraSum, bump, favs, toggleFav, addToCart, cartVenueId, dishId, orders, updateOrder, repeatOrder]);
+  }, [mode, theme, setTheme, cart, extraSum, bump, favs, toggleFav, addToCart, cartVenueId, dishId, orders, updateOrder, repeatOrder, user, auth]);
 
   return (
     <Ctx.Provider value={value}>
