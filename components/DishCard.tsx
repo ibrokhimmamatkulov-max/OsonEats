@@ -7,17 +7,17 @@ import { useApp } from "./AppProvider";
 
 /** Dish tile used on home, restaurant menu and search. `caption` defaults to the venue name. */
 export function DishCard({ d, caption }: { d: Dish; caption?: string }) {
-  const { cart, bump } = useApp();
+  const { cart, bump, openDish } = useApp();
   const n = cart[d.id] || 0;
   return (
     <div className="d">
-      <div className="d-media">
+      <div className="d-media" onClick={() => openDish(d.id)}>
         <img src={d.img} alt={d.name} loading="lazy" />
       </div>
       <div className="d-price">
         {d.price} <small>с.</small>
       </div>
-      <div className="d-name">{d.name}</div>
+      <button className="d-name" style={{ textAlign: "left" }} onClick={() => openDish(d.id)}>{d.name}</button>
       <div className="d-venue">{caption ?? venueById(d.venueId)?.name}</div>
       <div className="d-spacer" />
       {n ? (

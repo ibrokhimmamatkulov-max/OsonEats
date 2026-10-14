@@ -5,6 +5,7 @@ import { AppProvider } from "@/components/AppProvider";
 import { Header } from "@/components/Header";
 import { TabBar } from "@/components/TabBar";
 import { CartPill } from "@/components/CartPill";
+import { DishSheet } from "@/components/DishSheet";
 
 const rubik = Rubik({ subsets: ["latin", "cyrillic"], weight: ["400", "500", "600", "700"], variable: "--font-rubik", display: "swap" });
 
@@ -30,6 +31,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {children}
           <CartPill />
           <TabBar />
+          <DishSheet />
         </AppProvider>
       </body>
     </html>
