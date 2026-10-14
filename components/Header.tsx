@@ -1,12 +1,20 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { saveQuery } from "./SearchView";
 import { Icon } from "./Icon";
 import { useApp } from "./AppProvider";
 
 export function Header() {
   const { mode, setMode, theme, setTheme, user, openAuth, addr, openAddr } = useApp();
+  const router = useRouter();
+  const path = usePathname();
+  const urlQ = useSearchParams().get("q") ?? "";
+  // the search field mirrors ?q= on /search and clears on other pages
+  const [q, setQ] = useState("");
+  useEffect(() => setQ(path === "/search" ? urlQ : ""), [path, urlQ]);
   const [scrolled, setScrolled] = useState(false);
   const [dark, setDark] = useState(false);
 
@@ -46,10 +54,15 @@ export function Header() {
           <span>{addr ? addr.label : "Худжанд"}</span>
           <Icon name="down" style={{ width: 16, height: 16, color: "var(--muted)" }} />
         </button>
-        <form className="search" role="search" onSubmit={(e) => e.preventDefault()}>
+        <form className="search" role="search" onSubmit={(e) => { e.preventDefault(); saveQuery(q); (document.activeElement as HTMLElement)?.blur(); }}>
           <Icon name="search" />
           <label className="sr" htmlFor="q">Поиск</label>
-          <input id="q" type="search" placeholder="Найти блюдо или заведение" autoComplete="off" />
+          <input
+            id="q" type="search" autoComplete="off" value={q}
+            placeholder={mode === "visit" ? "Найти кафе или ресторан" : "Найти блюдо или заведение"}
+            onFocus={() => { if (path !== "/search") router.push("/search" + (q ? "?q=" + encodeURIComponent(q) : "")); }}
+            onChange={(e) => { setQ(e.target.value); router.replace("/search?q=" + encodeURIComponent(e.target.value)); }}
+          />
         </form>
         <button className="icon-btn" aria-label="Сменить тему" onClick={() => setTheme(dark ? "light" : "dark")}>
           <Icon name={dark ? "sun" : "moon"} />

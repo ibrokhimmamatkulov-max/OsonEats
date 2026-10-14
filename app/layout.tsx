@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Rubik } from "next/font/google";
+import { Suspense } from "react";
 import "./globals.css";
 import { AppProvider } from "@/components/AppProvider";
 import { Header } from "@/components/Header";
@@ -30,7 +31,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         <AppProvider>
-          <Header />
+          <Suspense fallback={<header className="hdr"><div className="wrap hdr-in" /></header>}>
+            <Header />
+          </Suspense>
           {children}
           <CartPill />
           <TabBar />
