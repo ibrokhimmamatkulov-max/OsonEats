@@ -793,3 +793,6 @@ mark{background:color-mix(in srgb,var(--primary) 22%,transparent);color:inherit;
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important}.bar i.cur,.otp.bad{animation:none}}
 body.locked{overflow:hidden}
+
+/* place page has its own action bar; the floating cart would cover it */
+body.pl-view .cart{display:none!important}
