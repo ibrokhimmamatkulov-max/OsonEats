@@ -6,7 +6,7 @@ import { Icon } from "./Icon";
 import { useApp } from "./AppProvider";
 
 export function Header() {
-  const { mode, setMode, theme, setTheme, user, openAuth } = useApp();
+  const { mode, setMode, theme, setTheme, user, openAuth, addr, openAddr } = useApp();
   const [scrolled, setScrolled] = useState(false);
   const [dark, setDark] = useState(false);
 
@@ -41,9 +41,9 @@ export function Header() {
             <Icon name="map" />Куда сходить
           </button>
         </div>
-        <button className="addr" aria-label="Адрес доставки">
+        <button className="addr" aria-label="Адрес доставки" onClick={() => openAddr()}>
           <Icon name="pin" />
-          <span>Худжанд</span>
+          <span>{addr ? addr.label : "Худжанд"}</span>
           <Icon name="down" style={{ width: 16, height: 16, color: "var(--muted)" }} />
         </button>
         <form className="search" role="search" onSubmit={(e) => e.preventDefault()}>

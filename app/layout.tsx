@@ -7,6 +7,8 @@ import { TabBar } from "@/components/TabBar";
 import { CartPill } from "@/components/CartPill";
 import { DishSheet } from "@/components/DishSheet";
 import { AuthDialog } from "@/components/AuthDialog";
+import { AddressDialog } from "@/components/AddressDialog";
+import "leaflet/dist/leaflet.css";
 
 const rubik = Rubik({ subsets: ["latin", "cyrillic"], weight: ["400", "500", "600", "700"], variable: "--font-rubik", display: "swap" });
 
@@ -34,6 +36,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <TabBar />
           <DishSheet />
           <AuthDialog />
+          <AddressDialog />
         </AppProvider>
       </body>
     </html>

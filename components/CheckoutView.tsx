@@ -31,7 +31,7 @@ function slots(hours: [string, string], closedNow: boolean) {
 
 export function CheckoutView() {
   const router = useRouter();
-  const { cartVenueId, cartCount, cartSum, placeOrder, user, openAuth } = useApp();
+  const { cartVenueId, cartCount, cartSum, placeOrder, user, openAuth, addr, openAddr } = useApp();
   const v = cartVenueId ? venueById(cartVenueId) : undefined;
 
   const [how, setHow] = useState<OrderHow>("delivery");
@@ -52,6 +52,14 @@ export function CheckoutView() {
   useEffect(() => {
     if (when === "later" && (!slot || !sl.includes(slot))) setSlot(sl[0] ?? null);
   }, [when, sl, slot]);
+
+  // the address comes from the picker (header or the field below)
+  useEffect(() => {
+    if (addr) {
+      setF((s) => ({ ...s, addr: addr.label }));
+      setBad((b) => b.filter((x) => x !== "addr"));
+    }
+  }, [addr]);
 
   // a logged-in user gets name and phone filled in
   useEffect(() => {
@@ -115,6 +123,7 @@ export function CheckoutView() {
       fee,
       pay: pay === "card" ? "Картой при получении" : "Наличными" + (changeFrom ? `, сдача с ${changeFrom} с.` : ""),
       addr: how === "delivery" ? [f.addr.trim(), f.apt.trim() && "кв. " + f.apt.trim()].filter(Boolean).join(", ") : v.pickupAddress,
+      ll: how === "delivery" && addr ? addr.ll : undefined,
       cutlery,
     });
     router.push(`/order/${order.num}`);
@@ -141,7 +150,16 @@ export function CheckoutView() {
             </div>
             {how === "delivery" ? (
               <div>
-                {field("addr", "Адрес", { placeholder: "Улица и дом", err: "Укажите улицу и дом", autoComplete: "street-address" })}
+                <div className={"fld" + (bad.includes("addr") ? " bad" : "")}>
+                  <label htmlFor="f-addr">Адрес</label>
+                  <input
+                    className="inp" id="f-addr" readOnly placeholder="Выберите улицу и дом" value={f.addr}
+                    ref={(el) => { refs.current.addr = el; }}
+                    onClick={() => openAddr()}
+                    onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openAddr(); } }}
+                  />
+                  <span className="err">Укажите улицу и дом</span>
+                </div>
                 <div className="row3">
                   {field("ent", "Подъезд", { inputMode: "numeric" })}
                   {field("flr", "Этаж", { inputMode: "numeric" })}

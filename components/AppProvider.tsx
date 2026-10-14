@@ -4,6 +4,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import { findDish, venueById } from "@/lib/utils";
 import { ConfirmDialog } from "./ConfirmDialog";
 import type { Order } from "@/lib/orders";
+import type { City } from "@/lib/data";
 import { MOCK_HISTORY } from "@/lib/history";
 
 type Mode = "order" | "visit";
@@ -42,9 +43,19 @@ type AppState = {
   openAuth: (o?: AuthRequest) => void;
   auth: AuthRequest | null;
   closeAuth: () => void;
+  addr: Address | null;
+  recent: Address[];
+  /** saves the chosen address as current and puts it on top of "recent" */
+  chooseAddr: (a: Address) => void;
+  removeRecent: (label: string) => void;
+  /** opens the address picker; `then` receives the chosen address */
+  openAddr: (then?: (a: Address) => void) => void;
+  addrPicker: { then?: (a: Address) => void } | null;
+  closeAddr: () => void;
 };
 
 export type User = { phone: string; name: string };
+export type Address = { city: City; label: string; ll: [number, number] };
 export type AuthRequest = { phone?: string; name?: string; step?: "phone" | "name"; then?: () => void };
 
 export type Question = { title: string; text: string; yes: string; onYes: () => void };
@@ -78,6 +89,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [orders, setOrders] = useState<Order[]>([]);
   const [user, setUserState] = useState<User | null>(null);
   const [auth, setAuth] = useState<AuthRequest | null>(null);
+  const [addr, setAddr] = useState<Address | null>(null);
+  const [recent, setRecent] = useState<Address[]>([]);
+  const [addrPicker, setAddrPicker] = useState<{ then?: (a: Address) => void } | null>(null);
   const [ready, setReady] = useState(false);
 
   // hydrate persisted state after mount so server and client markup match
@@ -88,8 +102,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setExtraSum(load("oe-extra", 0));
     setOrders(load("oe-orders", MOCK_HISTORY()));
     setUserState(load<User | null>("oe-user", null));
+    setAddr(load<Address | null>("oe-addr", null));
+    setRecent(load<Address[]>("oe-recent", []));
     setReady(true);
   }, []);
+  useEffect(() => { if (ready) save("oe-addr", addr); }, [addr, ready]);
+  useEffect(() => { if (ready) save("oe-recent", recent); }, [recent, ready]);
   useEffect(() => { if (ready) save("oe-orders", orders); }, [orders, ready]);
   useEffect(() => { if (ready) save("oe-cart", cart); }, [cart, ready]);
   useEffect(() => { if (ready) save("oe-extra", extraSum); }, [extraSum, ready]);
@@ -206,6 +224,17 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         } catch {}
       },
       auth, openAuth: (o = {}) => setAuth(o), closeAuth: () => setAuth(null),
+      addr, recent, addrPicker,
+      chooseAddr: (a) => {
+        setAddr(a);
+        setRecent((r) => [a, ...r.filter((x) => x.label !== a.label)].slice(0, 4));
+      },
+      removeRecent: (label) => {
+        setRecent((r) => r.filter((x) => x.label !== label));
+        setAddr((a) => (a?.label === label ? null : a));
+      },
+      openAddr: (then) => setAddrPicker({ then }),
+      closeAddr: () => setAddrPicker(null),
       placeOrder: (o) => {
         const order: Order = {
           ...o,
@@ -223,7 +252,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         return order;
       },
     };
-  }, [mode, theme, setTheme, cart, extraSum, bump, favs, toggleFav, addToCart, cartVenueId, dishId, orders, updateOrder, repeatOrder, user, auth]);
+  }, [mode, theme, setTheme, cart, extraSum, bump, favs, toggleFav, addToCart, cartVenueId, dishId, orders, updateOrder, repeatOrder, user, auth, addr, recent, addrPicker]);
 
   return (
     <Ctx.Provider value={value}>
