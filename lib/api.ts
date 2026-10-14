@@ -24,6 +24,13 @@ export async function sendCode(phone: string): Promise<void> {
   await post("/auth/sms", { phone: "+992" + phone });
 }
 
+/** POST /orders — returns the order number assigned by the server. Throws when offline or rejected. */
+export async function createOrder(payload: unknown): Promise<{ num?: number }> {
+  if (typeof navigator !== "undefined" && !navigator.onLine) throw new Error("offline");
+  if (!API) return {};
+  return post<{ num: number }>("/orders", payload);
+}
+
 /** POST /auth/verify — true when the code matches; the server sets the session cookie */
 export async function verifyCode(phone: string, code: string): Promise<boolean> {
   if (!API) {

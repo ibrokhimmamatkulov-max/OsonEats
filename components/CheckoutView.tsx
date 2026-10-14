@@ -6,6 +6,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { DELIVERY_FEE, FREE_DELIVERY_FROM } from "@/lib/data";
 import { hm, type OrderHow } from "@/lib/orders";
 import { formatPhone, toMin, venueById } from "@/lib/utils";
+import { createOrder } from "@/lib/api";
 import { Icon } from "./Icon";
 import { useApp } from "./AppProvider";
 import { CartLines } from "./CartLines";
@@ -31,7 +32,7 @@ function slots(hours: [string, string], closedNow: boolean) {
 
 export function CheckoutView() {
   const router = useRouter();
-  const { cartVenueId, cartCount, cartSum, placeOrder, user, openAuth, addr, openAddr } = useApp();
+  const { cartVenueId, cartCount, cartSum, placeOrder, user, openAuth, addr, openAddr, ask } = useApp();
   const v = cartVenueId ? venueById(cartVenueId) : undefined;
 
   const [how, setHow] = useState<OrderHow>("delivery");
@@ -112,8 +113,22 @@ export function CheckoutView() {
     place();
   };
 
-  const place = () => {
+  const place = async () => {
     if (!v) return;
+    try {
+      await createOrder({ venueId: v.id, how, cart: cartCount });
+    } catch (e) {
+      const offline = (e as Error).message === "offline";
+      ask({
+        title: "Не получилось оформить заказ",
+        text: offline
+          ? "Нет интернета. Заказ не отправлен, ничего не списано. Проверьте связь и попробуйте ещё раз"
+          : "Заведение не ответило. Ничего не списано: оплата при получении. Попробуйте ещё раз",
+        yes: "Повторить",
+        onYes: () => void place(),
+      });
+      return;
+    }
     const eta = when === "later" && slot ? slot.replace("завтра ", "") : hm(new Date(Date.now() + (how === "delivery" ? 40 : 20) * 60000));
     const changeFrom = change.replace(/\D/g, "");
     const order = placeOrder({

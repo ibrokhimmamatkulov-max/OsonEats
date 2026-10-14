@@ -72,7 +72,7 @@ export function DishSheet() {
 
   // "С этим берут": popular dishes of the same venue first
   const alsoTake = dish
-    ? (MENUS[dish.venueId] ?? []).flatMap((c) => c.dishes).filter((x) => x.id !== dish.id)
+    ? (MENUS[dish.venueId] ?? []).flatMap((c) => c.dishes).filter((x) => x.id !== dish.id && !x.soldOut)
         .sort((a, b) => Number(POPULAR_IDS.includes(b.id)) - Number(POPULAR_IDS.includes(a.id))).slice(0, 6)
     : [];
 
@@ -131,14 +131,14 @@ export function DishSheet() {
                 )}
               </div>
               <div className="s-foot">
-                <div className="stepper">
+                <div className="stepper" style={dish.soldOut ? { visibility: "hidden" } : undefined}>
                   <button aria-label="Меньше" disabled={qty <= 1} onClick={() => setQty((q) => Math.max(1, q - 1))}><Icon name="minus" /></button>
                   <span>{qty}</span>
                   <button aria-label="Больше" onClick={() => setQty((q) => q + 1)}><Icon name="plus" /></button>
                 </div>
-                <button className="s-add" onClick={() => addToCart(dish.id, qty, extras, closeDish)}>
-                  <span>Добавить</span>
-                  <span className="tot">{(dish.price + extras) * qty} с.</span>
+                <button className="s-add" disabled={dish.soldOut} onClick={() => addToCart(dish.id, qty, extras, closeDish)}>
+                  <span>{dish.soldOut ? "Сейчас нет в наличии" : "Добавить"}</span>
+                  {!dish.soldOut && <span className="tot">{(dish.price + extras) * qty} с.</span>}
                 </button>
               </div>
             </div>

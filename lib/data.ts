@@ -53,7 +53,12 @@ export type Dish = {
   category: string;
   desc?: string;
   nutrition?: [kcal: number, protein: number, fat: number, carbs: number];
+  /** venue marked it as finished for today */
+  soldOut?: boolean;
 };
+
+// mock: dishes the venue has run out of
+const SOLD_OUT = new Set(["p-h2", "y-3"]);
 
 type Row = [id: string, name: string, price: number, img: string, weight: string];
 const MENU_ROWS: Record<string, [category: string, rows: Row[]][]> = {
@@ -142,7 +147,7 @@ export const MENUS: Record<string, { category: string; dishes: Dish[] }[]> = Obj
       category,
       dishes: rows.map(([id, name, price, img, weight]) => ({
         id, name, price, img: M + img + ".jpg", venueId, weight, category,
-        desc: DETAILS[id]?.[0], nutrition: DETAILS[id]?.[1],
+        desc: DETAILS[id]?.[0], nutrition: DETAILS[id]?.[1], soldOut: SOLD_OUT.has(id),
       })),
     })),
   ]),

@@ -10,7 +10,7 @@ export function DishCard({ d, caption, name }: { d: Dish; caption?: string; name
   const { cart, bump, openDish } = useApp();
   const n = cart[d.id] || 0;
   return (
-    <div className="d">
+    <div className={"d" + (d.soldOut ? " sold" : "")}>
       <div className="d-media" onClick={() => openDish(d.id)}>
         <img src={d.img} alt={d.name} loading="lazy" />
       </div>
@@ -26,6 +26,8 @@ export function DishCard({ d, caption, name }: { d: Dish; caption?: string; name
           {n}
           <button aria-label="Добавить" onClick={() => bump(d.id, 1)}><Icon name="plus" /></button>
         </div>
+      ) : d.soldOut ? (
+        <button className="add" disabled>Нет в наличии</button>
       ) : (
         <button className="add" onClick={() => bump(d.id, 1)}>
           <Icon name="plus" />Добавить

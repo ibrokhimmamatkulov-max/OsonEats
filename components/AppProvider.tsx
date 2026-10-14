@@ -132,6 +132,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const addToCart = useCallback(
     (id: string, qty = 1, extraPerUnit = 0, after?: () => void) => {
+      if (findDish(id)?.soldOut) return;
       const target = findDish(id)?.venueId;
       if (!cartVenueId || cartVenueId === target) {
         add(id, qty, extraPerUnit);
